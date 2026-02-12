@@ -160,7 +160,7 @@ function Header(){
                 {/* Profile icon, opening menu on click */}
                 <div className="dropdown dropdown-end ml-4">
                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar placeholder">
-                        <div className="w-10 rounded-full bg-primary text-primary-content">
+                        <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
                             <span className="text-lg font-semibold">{userInitial}</span>
                         </div>
                     </label>

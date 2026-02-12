@@ -1,33 +1,55 @@
-import {useState, useRef} from 'react'
+import {useState} from 'react'
 import {Link} from 'react-router-dom'
 import LandingIntro from './LandingIntro'
 import ErrorText from  '../../components/Typography/ErrorText'
 import InputText from '../../components/Input/InputText'
+import apiClient from '../../app/api'
 
 function Login(){
 
     const INITIAL_LOGIN_OBJ = {
-        password : "",
-        emailId : ""
+        username : "",
+        password : ""
     }
 
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
     const [loginObj, setLoginObj] = useState(INITIAL_LOGIN_OBJ)
 
-    const submitForm = (e) =>{
+    const submitForm = async (e) =>{
         e.preventDefault()
         setErrorMessage("")
 
-        if(loginObj.emailId.trim() === "")return setErrorMessage("Email Id is required! (use any value)")
-        if(loginObj.password.trim() === "")return setErrorMessage("Password is required! (use any value)")
-        else{
-            setLoading(true)
-            // Call API to check user credentials and save token in localstorage
-            localStorage.setItem("token", "DumyTokenHere")
-            localStorage.setItem("userEmail", loginObj.emailId)
-            setLoading(false)
+        if(loginObj.username.trim() === "")return setErrorMessage("用户名不能为空")
+        if(loginObj.password.trim() === "")return setErrorMessage("密码不能为空")
+        
+        setLoading(true)
+        try {
+            // 调用登录接口
+            const response = await apiClient.post('/login', {
+                username: loginObj.username,
+                password: loginObj.password
+            })
+            
+            // 登录成功，保存 token 和用户信息
+            const { token, user } = response.data
+            localStorage.setItem("token", token)
+            localStorage.setItem("userEmail", user?.email || loginObj.username)
+            localStorage.setItem("userName", user?.name || loginObj.username)
+            
+            // 跳转到欢迎页
             window.location.href = '/app/welcome'
+        } catch (error) {
+            // 处理登录失败
+            if (error.response?.data?.message) {
+                setErrorMessage(error.response.data.message)
+            } else if (error.response?.status === 401) {
+                setErrorMessage("用户名或密码错误")
+            } else {
+                setErrorMessage("登录失败，请检查网络连接")
+            }
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -44,24 +66,24 @@ function Login(){
                         <LandingIntro />
                 </div>
                 <div className='py-24 px-10'>
-                    <h2 className='text-2xl font-semibold mb-2 text-center'>Login</h2>
+                    <h2 className='text-2xl font-semibold mb-2 text-center'>登录</h2>
                     <form onSubmit={(e) => submitForm(e)}>
 
                         <div className="mb-4">
 
-                            <InputText type="emailId" defaultValue={loginObj.emailId} updateType="emailId" containerStyle="mt-4" labelTitle="Email Id" updateFormValue={updateFormValue}/>
+                            <InputText type="text" defaultValue={loginObj.username} updateType="username" containerStyle="mt-4" labelTitle="用户名" updateFormValue={updateFormValue}/>
 
-                            <InputText defaultValue={loginObj.password} type="password" updateType="password" containerStyle="mt-4" labelTitle="Password" updateFormValue={updateFormValue}/>
+                            <InputText defaultValue={loginObj.password} type="password" updateType="password" containerStyle="mt-4" labelTitle="密码" updateFormValue={updateFormValue}/>
 
                         </div>
 
-                        <div className='text-right text-primary'><Link to="/forgot-password"><span className="text-sm  inline-block  hover:text-primary hover:underline hover:cursor-pointer transition duration-200">Forgot Password?</span></Link>
+                        <div className='text-right text-primary'><Link to="/forgot-password"><span className="text-sm  inline-block  hover:text-primary hover:underline hover:cursor-pointer transition duration-200">忘记密码?</span></Link>
                         </div>
 
                         <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
-                        <button type="submit" className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}>Login</button>
+                        <button type="submit" className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}>登录</button>
 
-                        <div className='text-center mt-4'>Don't have an account yet? <Link to="/register"><span className="  inline-block  hover:text-primary hover:underline hover:cursor-pointer transition duration-200">Register</span></Link></div>
+                        <div className='text-center mt-4'>还没有账号? <Link to="/register"><span className="  inline-block  hover:text-primary hover:underline hover:cursor-pointer transition duration-200">注册</span></Link></div>
                     </form>
                 </div>
             </div>

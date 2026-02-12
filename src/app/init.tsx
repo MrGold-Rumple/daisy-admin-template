@@ -1,9 +1,10 @@
-import axios from "axios"
+import apiClient, { API_BASE_URL } from "./api"
 
 const initializeApp = () => {
     
-    // Setting base URL for all API request via axios
-    axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
+    // API 基础地址已在 api.tsx 中配置
+    // 可通过 API_BASE_URL 常量访问
+    console.log("API Base URL:", API_BASE_URL)
 
 
     if (import.meta.env.DEV) {
